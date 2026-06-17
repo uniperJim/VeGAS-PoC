@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Header } from './components/Header'
 import { DealList } from './components/DealList'
 import { PositionDetail } from './components/PositionDetail'
+import { AboutDialog } from './components/AboutDialog'
 import { loadContracts } from './domain/data'
 import type { Contract, Position } from './domain/types'
 import { statusByCode } from './domain/types'
@@ -15,6 +16,23 @@ export default function App() {
   const [contracts, setContracts] = useState<Contract[]>(() => loadContracts())
   const [selectedId, setSelectedId] = useState<string | null>(() => loadContracts()[0]?.positions[0]?.id ?? null)
   const [logs, setLogs] = useState<Record<string, string[]>>({})
+  // Open the About/help overlay automatically on a visitor's first session.
+  const [aboutOpen, setAboutOpen] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('vegas_poc_about_seen') !== '1'
+    } catch {
+      return true
+    }
+  })
+
+  function closeAbout() {
+    setAboutOpen(false)
+    try {
+      localStorage.setItem('vegas_poc_about_seen', '1')
+    } catch {
+      // ignore (e.g. storage disabled)
+    }
+  }
 
   // Resolve the currently selected position from the live contract state.
   const selected: Position | null = useMemo(() => {
@@ -49,7 +67,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <Header count={contracts.length} />
+      <Header count={contracts.length} onAbout={() => setAboutOpen(true)} />
       <div className="layout">
         <aside className="sidebar">
           <div className="sidebar-head">
@@ -72,6 +90,7 @@ export default function App() {
         VeGAS Reimplementation PoC · Frontend-only Demo · synthetische Daten · ohne Gewähr —
         dient ausschließlich der Stakeholder-Abstimmung.
       </footer>
+      {aboutOpen && <AboutDialog onClose={closeAbout} />}
     </div>
   )
 }

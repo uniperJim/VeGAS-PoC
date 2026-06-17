@@ -1,4 +1,4 @@
-export function Header({ count }: { count: number }) {
+export function Header({ count, onAbout }: { count: number; onAbout: () => void }) {
   return (
     <header className="app-header">
       <div className="brand">
@@ -8,6 +8,10 @@ export function Header({ count }: { count: number }) {
       <div className="header-meta">
         <span className="pill">{count} Verträge</span>
         <span className="pill pill-warn">Synthetische Daten</span>
+        <button className="about-btn" onClick={onAbout} title="Was ist das? Bedienung &amp; Umfang">
+          <span className="about-icon" aria-hidden="true">?</span>
+          Über / Hilfe
+        </button>
       </div>
     </header>
   )
