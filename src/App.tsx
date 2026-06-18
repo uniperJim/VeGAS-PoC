@@ -3,16 +3,27 @@ import { Header } from './components/Header'
 import { DealList } from './components/DealList'
 import { PositionDetail } from './components/PositionDetail'
 import { AboutDialog } from './components/AboutDialog'
+import { ParityView } from './components/ParityView'
+import { PerformanceView } from './components/PerformanceView'
 import { loadContracts } from './domain/data'
 import type { Contract, Position } from './domain/types'
 import { statusByCode } from './domain/types'
 import type { ActionDef } from './domain/lifecycle'
+
+type View = 'deals' | 'parity' | 'performance'
+
+const NAV: { id: View; label: string }[] = [
+  { id: 'deals', label: 'Verträge & Lifecycle' },
+  { id: 'parity', label: 'Kalkulations-Parität' },
+  { id: 'performance', label: 'Performance' },
+]
 
 function timestamp(): string {
   return new Date().toLocaleTimeString('de-DE')
 }
 
 export default function App() {
+  const [view, setView] = useState<View>('deals')
   const [contracts, setContracts] = useState<Contract[]>(() => loadContracts())
   const [selectedId, setSelectedId] = useState<string | null>(() => loadContracts()[0]?.positions[0]?.id ?? null)
   const [logs, setLogs] = useState<Record<string, string[]>>({})
@@ -68,24 +79,47 @@ export default function App() {
   return (
     <div className="app">
       <Header count={contracts.length} onAbout={() => setAboutOpen(true)} />
-      <div className="layout">
-        <aside className="sidebar">
-          <div className="sidebar-head">
-            <span>Verträge &amp; Positionen</span>
-            <button className="btn-link" onClick={resetAll} title="Demo-Zustand zurücksetzen">
-              Zurücksetzen
-            </button>
-          </div>
-          <DealList contracts={contracts} selectedId={selectedId} onSelect={(p) => setSelectedId(p.id)} />
-        </aside>
-        <main className="content">
-          {selected ? (
-            <PositionDetail position={selected} onAction={handleAction} log={logs[selected.id] ?? []} />
-          ) : (
-            <div className="empty">Keine Position ausgewählt.</div>
-          )}
+      <nav className="subnav">
+        {NAV.map((n) => (
+          <button
+            key={n.id}
+            className={view === n.id ? 'is-active' : ''}
+            onClick={() => setView(n.id)}
+          >
+            {n.label}
+          </button>
+        ))}
+      </nav>
+      {view === 'deals' && (
+        <div className="layout">
+          <aside className="sidebar">
+            <div className="sidebar-head">
+              <span>Verträge &amp; Positionen</span>
+              <button className="btn-link" onClick={resetAll} title="Demo-Zustand zurücksetzen">
+                Zurücksetzen
+              </button>
+            </div>
+            <DealList contracts={contracts} selectedId={selectedId} onSelect={(p) => setSelectedId(p.id)} />
+          </aside>
+          <main className="content">
+            {selected ? (
+              <PositionDetail position={selected} onAction={handleAction} log={logs[selected.id] ?? []} />
+            ) : (
+              <div className="empty">Keine Position ausgewählt.</div>
+            )}
+          </main>
+        </div>
+      )}
+      {view === 'parity' && (
+        <main className="content content-wide view-main">
+          <ParityView />
         </main>
-      </div>
+      )}
+      {view === 'performance' && (
+        <main className="content content-wide view-main">
+          <PerformanceView />
+        </main>
+      )}
       <footer className="app-footer">
         VeGAS Reimplementation PoC · Frontend-only Demo · synthetische Daten · ohne Gewähr —
         dient ausschließlich der Stakeholder-Abstimmung.

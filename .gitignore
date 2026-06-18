@@ -22,3 +22,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local / real data — MUST NEVER be committed (only synthetic data ships).
+# Real legacy parity exports, customer data, etc. belong here and stay local.
+local-data/
+*.local.json
+*.real.json
+parity-*.json
+!vegas-parity-sample.json
+*.accdb
+*.mdb
+extracted/
